@@ -43,7 +43,7 @@ impl<T> Mutex<T> {
         // Approach 2: compare and exchange
         while self
             .locked
-            .compare_exchange(UNLOCKED, LOCKED, Ordering::Relaxed, Ordering::Relaxed)
+            .compare_exchange_weak(UNLOCKED, LOCKED, Ordering::Acquire, Ordering::Relaxed)
             .is_err()
         {
             // MESI Protocol
@@ -65,7 +65,7 @@ impl<T> Mutex<T> {
 
         // Safety: We hold the lock, so we can create a mutable reference
         let ret = f(unsafe { &mut *self.value.get() });
-        self.locked.store(UNLOCKED, Ordering::Relaxed);
+        self.locked.store(UNLOCKED, Ordering::Release);
         ret
     }
 }
